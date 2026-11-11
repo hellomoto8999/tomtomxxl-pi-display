@@ -1,0 +1,31 @@
+#!/bin/busybox sh
+# OpenTom init - TomTom XXL as USB display + audio sink for Raspberry Pi
+# NOTE: do NOT mount the internal FAT here: the MMC/FAT can stall at boot and
+# starve userspace. tomdisp runs from the initramfs (RAM). Mount the FAT on
+# demand over telnet for updates.
+/bin/busybox --install -s /bin 2>/dev/null
+
+mount -t proc none /proc
+echo 0 > /proc/sys/kernel/printk 2>/dev/null
+mount -t sysfs none /sys
+mount -t tmpfs none /tmp
+mkdir -p /dev/pts /dev/shm
+mount -t devpts none /dev/pts 2>/dev/null
+mount -t tmpfs none /dev/shm 2>/dev/null
+
+echo "[init] loading USB gadget..."
+insmod /lib/modules/2.6.13/kernel/drivers/usb/gadget/s3c24xx_udc.ko
+insmod /lib/modules/2.6.13/kernel/drivers/usb/gadget/g_ether.ko
+sleep 2
+
+ifconfig lo 127.0.0.1 up
+ifconfig usb0 192.168.1.10 netmask 255.255.255.0 up
+
+echo 50 > /sys/class/backlight/s3c/brightness 2>/dev/null
+
+echo "[init] starting display + audio"
+/bin/tomdisp serve 5555 >/tmp/serve.log 2>&1 &
+/bin/tomdisp play 5556 >/tmp/play.log 2>&1 &
+
+echo "[init] ready: usb0=192.168.1.10, display :5555, audio :5556"
+exec telnetd -F -l /bin/sh

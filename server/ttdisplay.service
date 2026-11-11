@@ -1,0 +1,17 @@
+[Unit]
+Description=TomTom XXL IQ Routes as USB display for Raspberry Pi
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=-/home/pi/ttbuild/immich.env
+Environment=BRIGHT_NIGHT=10
+ExecStartPre=+/bin/sh -c 'nmcli con up ttdisp || true'
+ExecStart=/usr/bin/python3 -u /home/pi/ttbuild/dashboard.py 1
+Restart=always
+RestartSec=3
+User=pi
+
+[Install]
+WantedBy=multi-user.target

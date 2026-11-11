@@ -1,0 +1,32 @@
+# build outputs / large artifacts (never commit these)
+build/
+out/
+ttsystem
+ttsystem.*
+*.zImage
+*.ko
+*.cpio
+*.cpio.gz
+linux-s3c24xx/
+kernel-build/
+busybox-*/
+gcc-3.3.4_glibc-2.3.2/
+*.tar.gz
+*.tar.bz2
+tomdisp
+dashboard
+mktt
+
+# editor / os
+*.swp
+.DS_Store
+
+# secrets
+immich.env
+*.env
+# design session artifacts
+.impeccable/
+
+# python
+__pycache__/
+*.pyc
