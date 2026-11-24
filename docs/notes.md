@@ -78,14 +78,17 @@ get the internal disk back: keep the device **connected to a PC and power-cycle*
 
 ## USB Ethernet + routing pitfall
 
-`g_ether` presents CDC-ECM; the Pi binds `cdc_ether` and creates `usb0`. If you
-assign `192.168.1.1/24` and your LAN is also `192.168.1.0/24`, the connected
-route hijacks your LAN (you can lose SSH/Internet). Use a **/32 + host route**:
+`g_ether` presents CDC-ECM; the Pi binds `cdc_ether` and creates `usb0`. Give
+the link a **dedicated subnet** (e.g. `10.13.37.0/24`) so it can never collide
+with your LAN or a DHCP lease. Do **not** use a subnet that overlaps your LAN:
+with `192.168.1.1/24` on `usb0` the connected route hijacks `192.168.1.0/24`
+(we lost connectivity that way). A `/32` + host route also works, but a
+dedicated subnet is simpler and avoids any conflict:
 
 ```
 nmcli con add type ethernet ifname usb0 con-name ttdisplay \
-  ipv4.method manual ipv4.addresses 192.168.1.1/32 \
-  ipv4.routes "192.168.1.10/32" ipv4.never-default yes
+  ipv4.method manual ipv4.addresses 10.13.37.1/24 \
+  ipv4.never-default yes
 ```
 
 NetworkManager re-manages `usb0` on every re-enumeration, so a manual `ip addr`

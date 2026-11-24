@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import requests
 
-TT = (os.environ.get("TT_IP", "192.168.1.10"), int(os.environ.get("TT_PORT", "5555")))
+TT = (os.environ.get("TT_IP", "10.13.37.10"), int(os.environ.get("TT_PORT", "5555")))
 AUDIO_PORT = int(os.environ.get("AUDIO_PORT", "5556"))
 RADIO_URL = os.environ.get(
     "RADIO_URL",
@@ -354,9 +354,9 @@ class Radio:
                 if not d:
                     break
                 if self.volume < 100:
-                    a = np.frombuffer(d, dtype='<i2').astype(np.int32)
-                    a = (a * self.volume) // 100
-                    d = a.astype('<i2').tobytes()
+                    g = (self.volume / 100.0) ** 2.5
+                    a = np.frombuffer(d, dtype='<i2').astype(np.float32) * g
+                    d = np.clip(a, -32768, 32767).astype('<i2').tobytes()
                 self.sock.sendall(d)
         except Exception as e:
             print(f"radio: {e}", flush=True)

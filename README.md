@@ -16,8 +16,8 @@ rendered frames to the TomTom (which blits them to `/dev/fb0`) and raw PCM audio
   │  (server)    │  TCP frames   │ tomdisp  ──► /dev/fb0 (480×272)│
   │  + ffmpeg    │  TCP PCM      │          ──► /dev/dsp (audio) │
   └──────────────┘◄──────────────│ touch events (LIGHT/VOL/RADIO)│
-       192.168.1.1/32 host-route └──────────────────────────────┘
-                                    192.168.1.10
+       10.13.37.1/24                  └──────────────────────────────┘
+                                     10.13.37.10
 ```
 
 ## Screenshot
@@ -167,13 +167,13 @@ sudo systemctl enable --now ttdisplay.service
 The service loads `/home/pi/ttbuild/immich.env` (URL, API key, intervals) and
 runs as an unprivileged user; `ExecStartPre` brings `usb0` up as root.
 
-The Pi's `usb0` must reach the TomTom. Use a **`/32` address + host route** so a
-LAN on `192.168.1.0/24` is not hijacked:
+The Pi's `usb0` must reach the TomTom. Use a **dedicated subnet** (e.g.
+`10.13.37.0/24`) so it can never collide with your LAN or its DHCP pool:
 
 ```bash
 sudo nmcli con add type ethernet ifname usb0 con-name ttdisp \
-  ipv4.method manual ipv4.addresses 192.168.1.1/32 \
-  ipv4.routes "192.168.1.10/32" ipv4.never-default yes
+  ipv4.method manual ipv4.addresses 10.13.37.1/24 \
+  ipv4.never-default yes
 sudo nmcli con up ttdisp
 ```
 
